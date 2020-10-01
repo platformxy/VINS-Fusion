@@ -8,12 +8,14 @@
  *******************************************************/
 
 #include "visualization.h"
+#include <sensor_msgs/point_cloud_conversion.h>
 
 using namespace ros;
 using namespace Eigen;
 ros::Publisher pub_odometry, pub_latest_odometry;
 ros::Publisher pub_path;
 ros::Publisher pub_point_cloud, pub_margin_cloud;
+ros::Publisher pub_point_cloud2, pub_margin_cloud2;
 ros::Publisher pub_key_poses;
 ros::Publisher pub_camera_pose;
 ros::Publisher pub_camera_pose_visual;
@@ -37,7 +39,9 @@ void registerPub(ros::NodeHandle &n)
     pub_path = n.advertise<nav_msgs::Path>("path", 1000);
     pub_odometry = n.advertise<nav_msgs::Odometry>("odometry", 1000);
     pub_point_cloud = n.advertise<sensor_msgs::PointCloud>("point_cloud", 1000);
+    pub_point_cloud2 = n.advertise<sensor_msgs::PointCloud2>("point_cloud2", 1000);
     pub_margin_cloud = n.advertise<sensor_msgs::PointCloud>("margin_cloud", 1000);
+    pub_margin_cloud2 = n.advertise<sensor_msgs::PointCloud2>("margin_cloud2", 1000);
     pub_key_poses = n.advertise<visualization_msgs::Marker>("key_poses", 1000);
     pub_camera_pose = n.advertise<nav_msgs::Odometry>("camera_pose", 1000);
     pub_camera_pose_visual = n.advertise<visualization_msgs::MarkerArray>("camera_pose_visual", 1000);
@@ -272,6 +276,12 @@ void pubPointCloud(const Estimator &estimator, const std_msgs::Header &header)
     }
     pub_point_cloud.publish(point_cloud);
 
+    {
+        sensor_msgs::PointCloud2 point_cloud2;
+        point_cloud2.header = header;
+        sensor_msgs::convertPointCloudToPointCloud2(point_cloud, point_cloud2);
+        pub_point_cloud2.publish(point_cloud2);
+    }
 
     // pub margined potin
     sensor_msgs::PointCloud margin_cloud;
@@ -301,6 +311,13 @@ void pubPointCloud(const Estimator &estimator, const std_msgs::Header &header)
         }
     }
     pub_margin_cloud.publish(margin_cloud);
+
+    {
+        sensor_msgs::PointCloud2 margin_cloud2;
+        margin_cloud2.header = header;
+        sensor_msgs::convertPointCloudToPointCloud2(margin_cloud, margin_cloud2);
+        pub_margin_cloud2.publish(margin_cloud2);
+    }
 }
 
 
